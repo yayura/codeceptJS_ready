@@ -1,0 +1,9 @@
+node_modules
+output
+allure-report
+.idea/
+.vscode/
+*.iml
+*.env
+/*.csv
+/participants.csv

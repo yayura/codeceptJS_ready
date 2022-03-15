@@ -1,0 +1,32 @@
+stages:
+  - chrome-ci
+variables:
+  SCREEN_WIDTH: 1920
+  SCREEN_HEIGHT: 1080
+  URI_PREFIX:
+    value: dev
+    description: "Please use one of existing environments: dev, test"
+
+
+e2e-tests-chrome:
+  image: registry.test.online:443/dvps/ci-dungeon/node:12-with-java
+  stage: chrome-ci
+  services:
+    - name: registry.test.online:443/dvps/ci-dungeon/selenium-standalone-chrome:4.0
+      alias: selenium-standalone-chrome
+  before_script:
+    - export URI_PREFIX=${URI_PREFIX}
+    - export HEADLESS=true
+    - npm ci
+  script:
+#    - npx codeceptjs run -c codecept.conf.js --steps --grep @s --verbose
+    - npx codeceptjs run -c codecept.conf.ci.js --steps --grep @s -p allure
+#    - npx codeceptjs run-workers 5 --grep @q1 -p allure
+#    - npx codeceptjs run --grep @protocol -p allure
+  after_script:
+    - cp -r output/ ci_artifacts/
+  artifacts:
+    name: "$CI_JOB_STAGE-$CI_COMMIT_REF_NAME"
+    paths:
+      - ci_artifacts/
+    when: always

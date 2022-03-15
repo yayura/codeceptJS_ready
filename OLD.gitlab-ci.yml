@@ -1,0 +1,19 @@
+include:
+  - project: 'test/environment'
+    file: '/templates/.gitlab-ci.test.yml'
+
+variables:
+  XHPROF_TAG: 2.0.5-php-7.2.13
+  MASTER_DB_TAG: latest
+  V2_TAG: master
+
+run:test:
+  image: docker/compose:1.25.0-alpine
+  variables:
+    URI_PREFIX: $CI_PIPELINE_IID
+  script:
+    - export V2_FRONTEND_IP=$(head -1 hosts | awk '{print $1}')
+    - docker-compose -p $CI_PIPELINE_ID up --build -d --scale chrome-node=3
+    - docker-compose -p $CI_PIPELINE_ID run --rm --entrypoint "/bin/sh -c" --no-deps --workdir="/integration" test "npm install-ci-test"
+  after_script:
+    - docker-compose -p $CI_PIPELINE_ID down -v
